@@ -94,6 +94,71 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ConectorMiBlobStorage')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/salida')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ConectorMiBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "salida",
+						"container": "datafactory"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ConectorMiBlobStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "SanFranciscoTrain",
+								"type": "DatasetReference"
+							},
+							"name": "OrigenDatos"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "salida",
+								"type": "DatasetReference"
+							},
+							"name": "destino"
+						}
+					],
+					"transformations": [
+						{
+							"name": "ColumnaSuma"
+						}
+					],
+					"script": "source(output(\n\t\tDates as timestamp 'yyyy-MM-dd HH:mm:ss',\n\t\tCategory as string,\n\t\tDescript as string,\n\t\tDayOfWeek as string,\n\t\tPdDistrict as string,\n\t\tResolution as string,\n\t\tAddress as string,\n\t\tX as double,\n\t\tY as double\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> OrigenDatos\nOrigenDatos derive(Suma = X+Y) ~> ColumnaSuma\nColumnaSuma sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> destino"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SanFranciscoTrain')]",
+				"[concat(variables('factoryId'), '/datasets/salida')]"
+			]
 		}
 	]
 }
