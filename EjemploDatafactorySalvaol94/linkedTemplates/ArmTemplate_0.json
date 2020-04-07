@@ -124,6 +124,64 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/SanFranciscoTest')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ConectorMiBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "test.csv",
+						"folderPath": "origenes",
+						"container": "datafactory"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Id",
+						"type": "String"
+					},
+					{
+						"name": "Dates",
+						"type": "String"
+					},
+					{
+						"name": "DayOfWeek",
+						"type": "String"
+					},
+					{
+						"name": "PdDistrict",
+						"type": "String"
+					},
+					{
+						"name": "Address",
+						"type": "String"
+					},
+					{
+						"name": "X",
+						"type": "String"
+					},
+					{
+						"name": "Y",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ConectorMiBlobStorage')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -178,6 +236,52 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/SanFranciscoTrain')]",
+				"[concat(variables('factoryId'), '/datasets/salida')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow2')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "SanFranciscoTrain",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						},
+						{
+							"dataset": {
+								"referenceName": "SanFranciscoTest",
+								"type": "DatasetReference"
+							},
+							"name": "source2"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "salida",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "Union1"
+						}
+					],
+					"script": "source(output(\n\t\tDates as string,\n\t\tCategory as string,\n\t\tDescript as string,\n\t\tDayOfWeek as string,\n\t\tPdDistrict as string,\n\t\tResolution as string,\n\t\tAddress as string,\n\t\tX as string,\n\t\tY as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> source1\nsource(output(\n\t\tId as string,\n\t\tDates as string,\n\t\tDayOfWeek as string,\n\t\tPdDistrict as string,\n\t\tAddress as string,\n\t\tX as string,\n\t\tY as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> source2\nsource1, source2 union(byName: true)~> Union1\nUnion1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['DatasetCompleto.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SanFranciscoTrain')]",
+				"[concat(variables('factoryId'), '/datasets/SanFranciscoTest')]",
 				"[concat(variables('factoryId'), '/datasets/salida')]"
 			]
 		},
