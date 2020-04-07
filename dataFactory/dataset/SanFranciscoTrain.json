@@ -1,0 +1,61 @@
+{
+	"name": "SanFranciscoTrain",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ConectorMiBlobStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "train.csv",
+				"folderPath": "origenes",
+				"container": "datafactory"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Dates",
+				"type": "String"
+			},
+			{
+				"name": "Category",
+				"type": "String"
+			},
+			{
+				"name": "Descript",
+				"type": "String"
+			},
+			{
+				"name": "DayOfWeek",
+				"type": "String"
+			},
+			{
+				"name": "PdDistrict",
+				"type": "String"
+			},
+			{
+				"name": "Resolution",
+				"type": "String"
+			},
+			{
+				"name": "Address",
+				"type": "String"
+			},
+			{
+				"name": "X",
+				"type": "String"
+			},
+			{
+				"name": "Y",
+				"type": "String"
+			}
+		]
+	}
+}
